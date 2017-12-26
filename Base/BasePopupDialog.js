@@ -1,12 +1,24 @@
-/**
- * Created by thaod on 5/3/2017.
- */
-/**
- * Created by thaod on 5/1/2017.
- */
-
+/* Created by thaod on 5/3/2017.*/
 
 var BasePopupDialog = cc.Layer.extend({
+    ctor: function(){
+        this._super();
+
+        cc.eventManager.addListener({
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: true,
+            onTouchBegan: function(touch, event){
+                return true;
+            },
+
+            onTouchMoved: function(touch, event){
+
+            },
+            onTouchEnded: function(touch, evnt){
+
+            }
+        }, this);
+    },
 
     onEnter: function(){
         cc.log("BasePopupDialog.onEnter");

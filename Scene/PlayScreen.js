@@ -17,18 +17,15 @@ var PlayLayer = cc.Layer.extend({
     errorLabel: null,
     levelLabel: null,
     bgImage: null,
+    level : LEVEL_EASY,
+    useHintTime: 0,
+
+    acceptCallBack: null,
 
     ctor: function () {
         //////////////////////////////
         // 1. super init first
         this._super();
-
-        /////////////////////////////
-        // 2. add a menu item with "X" image, which is clicked to quit the program
-        //    you may modify it.
-        // ask the window size
-       // var cache = cc.spriteFrameCache;
-        //cc.SpriteFrameCache.addSpriteFramesWithFile("playScene.plist");
 
         var size = cc.winSize;
 
@@ -78,15 +75,29 @@ var PlayLayer = cc.Layer.extend({
                 var rect = cc.rect(0, 0, s.width, s.height);
                 if (cc.rectContainsPoint(rect, locationInNode)) {
                     cc.log("sprite began ..x = " + locationInNode.x + ". y = " + locationInNode.y);
-                    var i = 0;
                     PlayLayer.getInstance().onBoardClick(locationInNode.x, locationInNode.y);
                     return true;
                 }
                 return false;
             }
+
         });
 
         cc.eventManager.addListener(touchListener, bgImage);
+
+        var keyboardListener = cc.EventListener.create({
+            event: cc.EventListener.KEYBOARD,
+            onKeyPressed:  function(keyCode, event){
+                cc.log("keyCode = "+keyCode);
+                if(keyCode == cc.KEY.backspace || keyCode == cc.KEY.back){
+                    PlayLayer.getInstance().onBackPress();
+                }else if(keyCode == cc.KEY.home){
+                    //do something
+                }
+            }
+        });
+
+        cc.eventManager.addListener(keyboardListener, bgImage);
 
         return true;
     },
@@ -125,7 +136,7 @@ var PlayLayer = cc.Layer.extend({
                     for (var j = 0; j < SIZE; j++) {
                         if (matrix[i][j] == matrix[selectedPoint.y][selectedPoint.x]) {
                             if (this.selectedCellSprite[idx] == undefined) {
-                                this.selectedCellSprite[idx] = cc.Sprite.createWithSpriteFrameName("chon.png");
+                                this.selectedCellSprite[idx] = cc.Sprite.create("#chon.png");
                                 this.bgImage.addChild(this.selectedCellSprite[idx], 2);
                             }
                             this.selectedCellSprite[idx].setPosition(cc.p(this.posX[j], this.posY[i]));
@@ -144,7 +155,7 @@ var PlayLayer = cc.Layer.extend({
             }
             for (i = 0; i < SIZE; i++) {
                 if (this.selectedCellSprite[i] == undefined) {
-                    this.selectedCellSprite[i] = cc.Sprite.create("#chon.png");;
+                    this.selectedCellSprite[i] = cc.Sprite.create("#chon.png");
                     this.bgImage.addChild(this.selectedCellSprite[i], 2);
                 }
                 this.selectedCellSprite[i].setPosition(cc.p(this.posX[i], this.posY[selectedPoint.y]));
@@ -238,16 +249,16 @@ var PlayLayer = cc.Layer.extend({
             if (this.isInsertMode) {
                 var r = this.board.insertIntoUserMatrix(this.board.getSelect().y, this.board.getSelect().x, tag + 1);
                 if (r == 0) {
-                    SoundManager.playTrueMusic();
-                    if(this.board.isFull()) this.youWin();
+                    SoundManager.playRightSound();
+                    if(this.board.isFull()) this.showYouWinDialog();
                 } else if (r == -1) {
-                    SoundManager.playFalseMusic();
+                    SoundManager.playWrongSound();
                     var numError = this.board.numError;
                     this.showNumError(numError);
                     if (numError >= MAX_ERROR_IN_GAME) this.gameOver();
                 } else {
-                    SoundManager.playTrueMusic();
-                    if(this.board.isFull()) this.youWin();
+                    SoundManager.playRightSound();
+                    if(this.board.isFull()) this.showYouWinDialog();
                 }
             }
 
@@ -259,14 +270,23 @@ var PlayLayer = cc.Layer.extend({
     onClickHintButton: function (sender, controlEvent) {
         if (controlEvent == ccui.Widget.TOUCH_ENDED) {
             cc.log("onClickHintButton");
+            SoundManager.playClickSound();
+            var cost = (this.useHintTime +1) * 5;
+            if(!GameDataMgr.instance.canUseGold(-cost)) return;
+            GameDataMgr.instance.addGold(-cost);
+
+            this.showSubGoldEffect(cost);
             this.board.hint();
             this.updateBoard();
+            this.useHintTime ++;
+            if(this.board.isFull()) this.showYouWinDialog();
         }
     },
 
     onClickEraserButton: function (sender, controlEvent) {
         if (controlEvent == ccui.Widget.TOUCH_ENDED) {
             cc.log("onClickEraserButton");
+            SoundManager.playClickSound();
             this.board.eraser();
             this.updateBoard();
         }
@@ -275,15 +295,21 @@ var PlayLayer = cc.Layer.extend({
     onClickChangeModeButton: function (sender, controlEvent) {
         if (controlEvent == ccui.Widget.TOUCH_ENDED) {
             cc.log("onClickChangeModeButton");
+            SoundManager.playClickSound();
             this.isInsertMode = !this.isInsertMode;
-            if (this.isInsertMode) {
-                this.changeModeButton.loadTextureNormal("res/playScense/btn_off.png", ccui.Widget.LOCAL_TEXTURE);
-                this.changeModeButton.loadTexturePressed("res/playScense/btn_on.png", ccui.Widget.LOCAL_TEXTURE);
+            this.updateModeButton();
+        }
+    },
 
-            } else {
-                this.changeModeButton.loadTextureNormal("res/playScense/btn_on.png", ccui.Widget.LOCAL_TEXTURE);
-                this.changeModeButton.loadTexturePressed("res/playScense/btn_off.png", ccui.Widget.LOCAL_TEXTURE);
-            }
+    updateModeButton: function(){
+        if (this.isInsertMode) {
+            this.changeModeButton.loadTextureNormal("#btn_off.png", ccui.Widget.LOCAL_TEXTURE);
+            this.changeModeButton.loadTexturePressed("#btn_on.png", ccui.Widget.LOCAL_TEXTURE);
+            this.changeModeButton.setColor(cc.WHITE);
+        } else {
+            this.changeModeButton.loadTextureNormal("#btn_on.png", ccui.Widget.LOCAL_TEXTURE);
+            this.changeModeButton.loadTexturePressed("#btn_off.png", ccui.Widget.LOCAL_TEXTURE);
+            this.changeModeButton.setColor(SELECTED_COLOR);
         }
     },
 
@@ -325,20 +351,83 @@ var PlayLayer = cc.Layer.extend({
     },
 
     gameOver: function () {
-        GameOverDialog.startDialog(false);
+        GameOverDialog.startDialog(false, Math.floor(this.getParent().time), this.board.numError);
+        this.getParent().stopTimeCounter();
+        SoundManager.playLostSound();
     },
 
-    youWin: function() {
-        GameOverDialog.startDialog(true);
+    showYouWinDialog: function() {
+        var time = Math.floor(this.getParent().time);
+        GameOverDialog.startDialog(true, time, this.board.numError);
+        this.getParent().stopTimeCounter();
+        SoundManager.playWonSound();
+        GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
+        MapScene.getInstance().updateData();
+    },
+
+    createNewGame: function(){
+        this.useHintTime =0;
+        this.isInsertMode = true;
+
+        var difficultLevel = GameDataMgr.convertFromLevelToDifficult(this.level);
+        this.board = new Board(difficultLevel);
+        this.drawBoard();
+        this.showNumError();
+        this.updateLevel();
+        this.updateCoin();
+        this.updateModeButton();
+    },
+
+    startNewGame: function(level){
+        this.level = level;
+        this.createNewGame();
     },
 
     restart: function()
     {
-        this.board = new Board(LEVEL_EASY);
-        this.drawBoard();
-        this.showNumError();
-    }
+        this.createNewGame();
+    },
 
+    nextLevel: function(){
+        this.level ++;
+        this.createNewGame();
+    },
+
+    updateLevel: function(){
+        this.levelLabel.setString(this.level.toString());
+    },
+
+    updateCoin: function(){
+        var coin = GameDataMgr.instance.gold;
+        this.coinLabel.setString(coin.toString());
+    },
+
+    showSubGoldEffect: function(cost){
+        var label = new cc.LabelBMFont("-"+cost, res.FONT_TW_CONDENSED_32);
+        var pos = this.coinLabel.getPosition();
+        this.coinLabel.getParent().addChild(label);
+        label.setPosition(pos);
+
+        var action = cc.sequence(cc.spawn(cc.moveBy(2, cc.p(0, 10)), cc.FadeOut(2)), cc.callFunc(this.showSubGoldEffectComplete, this, label));
+        label.setColor(cc.RED);
+        label.runAction(action);
+    },
+
+    showSubGoldEffectComplete: function(node){
+        node.removeFromParent();
+        this.updateCoin();
+    },
+
+    onBackPress: function(){
+        this.acceptCallBack = cc.callFunc(this.doBackPress, this);
+        MessageDialog.getInstance().startDialog(this.acceptCallBack, null, "Quit Game", "Are you sure want to quit this game?");
+        MessageDialog.getInstance().setAcceptLabel("Quit");
+    },
+
+    doBackPress: function(){
+        cc.log("doBackPress");
+        ScreenMgr.getInstance().changeScreen(MAP_SCREEN);
+    }
 
 });
 
@@ -369,6 +458,10 @@ var PlayScene = cc.Scene.extend({
     
     onEnter:function () {
         this._super();
+        this.scheduleUpdateTime();
+    },
+
+    scheduleUpdateTime: function(){
         this.schedule(this.updateTime, 0.5);
     },
 
@@ -379,15 +472,31 @@ var PlayScene = cc.Scene.extend({
         this.layer.timeLabel.setString(str);
     },
 
+    startNewGame: function(level){
+        this.layer.startNewGame(level);
+        this.resetTime();
+    },
+
     restart: function(){
         this.layer.restart();
         this.resetTime();
+        this.scheduleUpdateTime();
+    },
+
+    nextLevel: function(){
+        this.layer.nextLevel();
+        this.resetTime();
+        this.scheduleUpdateTime();
     },
 
     resetTime: function(){
         this.time = 0;
         var timeStr = Utility.timeToString(this.time);
         this.layer.timeLabel.setString(timeStr);
+    },
+
+    stopTimeCounter: function(){
+        this.unschedule(this.updateTime);
     }
 });
 

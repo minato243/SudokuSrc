@@ -7,18 +7,24 @@ var MapItemData = cc.Class.extend({
     status: LOCK,
     numStar: 0,
 
-    ctor: function(level){
-        this.level = level;
-        this.status = LOCK;
-        this.numStar = 0;
+    /**
+     *
+     * @param level of item, start from 1,2...
+     * @param status LOCK or UNLOCK
+     * @param numStar number star of this level, equal 0 if status = LOCK
+     */
+    ctor: function(level, status, numStar){
+        if(arguments.length == 3){
+            this.init(level, status, numStar);
+        } else if(arguments.length == 1){
+            this.init(level, LOCK, 0);
+        }else this.init(0, LOCK,0);
     },
 
-    ctor: function(level, status, numStar){
+    init: function(level,status, numStar){
         this.level = level;
         this.status = status;
         this.numStar = numStar;
-
-        cc.log(this.toString());
     },
 
     open: function() {
@@ -32,6 +38,22 @@ var MapItemData = cc.Class.extend({
     toString: function(){
         var result = "MapItemData{level = "+ this.level+", status = "+this.status +", numStar = "+ this.numStar+"}";
         return result;
+    },
+
+    convertToStorageString: function(){
+        var result = this.level+"|"+this.status+"|"+this.numStar;
+        return result;
     }
 
 });
+
+MapItemData.createFromString = function(data){
+    var mapItemData = new MapItemData();
+    var dataArray = data.split("|");
+    if(dataArray == undefined || dataArray.length == 0) return null;
+
+    mapItemData.level = parseInt(dataArray[0]);
+    mapItemData.status = (dataArray[1]=="true");
+    mapItemData.numStar = parseInt(dataArray[2]);
+    return mapItemData;
+}

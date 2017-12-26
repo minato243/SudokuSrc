@@ -18,8 +18,14 @@ var MENU_SCREEN = 2;
 var MAP_SCREEN = 3;
 var PLAY_SCREEN = 4;
 
-var NUM_MAP_ONE_LEVEL = 15;
+var NUM_LEVEL_ONE_MAP = 15;
+var NUM_TOTAL_LEVEL = 60;
+var NUM_GROUP = 4;
 
 var LOCK = true;
 var UN_LOCK = false;
 
+var SOUND_ON = true;
+var SOUND_OFF = false;
+
+var SELECTED_COLOR = { r: 255, g:255, b:152};

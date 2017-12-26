@@ -10,6 +10,7 @@ var Board = cc.Class.extend({
     numError:0,
 
     ctor: function(level){
+		cc.log("New board level = "+level);
 		this.matrix = [];
 		this.userMatrix = [];
 		this.backupMatrix = [];
@@ -94,7 +95,8 @@ var Board = cc.Class.extend({
 	},
 
 	remove:function(level) {
-		temp = [ 35, 40, 50, 55 ];
+		var temp = [ 35, 40, 50, 55 ];
+		temp =[1, 2,3,4];
 		for (var i = 0; i < temp[level]; i++) {
 			var row = Math.floor(Math.random() * SIZE);
 			var col = Math.floor(Math.random() * SIZE);

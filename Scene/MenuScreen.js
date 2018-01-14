@@ -22,12 +22,15 @@ var MenuScreenLayer = cc.Layer.extend({
 
         this.shareButton = mainScreen.node.getChildByName("btn_share");
         this.shareButton.addTouchEventListener(this.onClickShareButton, this);
+        this.shareButton.setVisible(true);
 
         this.highScoreButton = mainScreen.node.getChildByName("btn_high_score");
         this.highScoreButton.addTouchEventListener(this.onClickHighScoreButton, this);
+        this.highScoreButton.setVisible(false);
 
         this.achievementButton = mainScreen.node.getChildByName("btn_achievement");
         this.achievementButton.addTouchEventListener(this.onClickAchievementButton, this);
+        this.achievementButton.setVisible(false);
 
         this.settingButton = mainScreen.node.getChildByName("btn_setting");
         this.settingButton.addTouchEventListener(this.onClickSettingButton, this);
@@ -48,9 +51,41 @@ var MenuScreenLayer = cc.Layer.extend({
         });
         cc.eventManager.addListener(keyboardListener, this.bgImage);
 
+        this.initAdmob();
         return true;
     },
 
+    initAdmob: function(){
+        sdkbox.PluginAdMob.init();
+        sdkbox.PluginAdMob.setListener({
+            adViewDidReceiveAd : function(name) {
+                cc.log("*** adViewDidReceiveAd "+ name);
+                if(name == ADMOB_BANNER) sdkbox.PluginAdMob.show(name);
+            },
+            adViewDidFailToReceiveAdWithError : function(name, msg) {
+                cc.error("*** " +msg+"Ads = "+ name);
+            },
+            adViewWillPresentScreen : function(name) {
+                cc.log("AdMob adViewWillPresentScreen " + name);
+            },
+            adViewDidDismissScreen : function(name) {
+                cc.log("AdMob adViewDidDismissScreen " + name);
+                GameDataMgr.getInstance().gold += 10;
+                if(PlayScene.getInstance().isRunning()){
+                    PlayScene.getInstance().layer.updateCoin();
+                }
+            },
+            adViewWillDismissScreen : function(name) {
+                cc.log("AdMob adViewWillDismissScreen " + name);
+            },
+            adViewWillLeaveApplication : function(name) {
+                cc.log("AdMob adViewWillLeaveApplication " + name);
+            }
+        });
+        sdkbox.PluginAdMob.cache(ADMOB_BANNER);
+        sdkbox.PluginAdMob.cache(ADMOB_INTERSTITIAL);
+        sdkbox.PluginAdMob.cache(ADMOB_VIDEO_REWARD);
+    },
 
     startGame: function(pSender, controlEvent){
         if(controlEvent == ccui.Widget.TOUCH_ENDED){
@@ -77,6 +112,7 @@ var MenuScreenLayer = cc.Layer.extend({
             //todo
             SoundManager.playClickSound();
             cc.warn("onClickShareButton");
+            PlatformUtils.getInstance().callAndroidFunction("com.biggame.sudoku.AndroidUtils","shareMyApp","()V");
         }
     },
 
@@ -104,11 +140,13 @@ var MenuScreenLayer = cc.Layer.extend({
 
     updateButtonVolume: function(){
         if(SoundManager.getInstance().status == SOUND_OFF){
-            this.volumeButton.loadTextureNormal("btn_volume_off_2", ccui.Widget.PLIST_TEXTURE);
-            this.volumeButton.loadTexturePressed("btn_volume_on_2", ccui.Widget.PLIST_TEXTURE);
+            cc.log("SOUND_OFF");
+            this.volumeButton.loadTextureNormal("btn_volume_off_2.png", ccui.Widget.PLIST_TEXTURE);
+            this.volumeButton.loadTexturePressed("btn_volume_on_2.png", ccui.Widget.PLIST_TEXTURE);
         } else {
-            this.volumeButton.loadTextureNormal("btn_volume_off", ccui.Widget.PLIST_TEXTURE);
-            this.volumeButton.loadTexturePressed("btn_volume_on", ccui.Widget.PLIST_TEXTURE);
+            cc.log("SOUND_ON");
+            this.volumeButton.loadTextureNormal("btn_volume_off.png", ccui.Widget.PLIST_TEXTURE);
+            this.volumeButton.loadTexturePressed("btn_volume_on.png", ccui.Widget.PLIST_TEXTURE);
         }
     },
 
@@ -143,5 +181,3 @@ var MenuScreen = cc.Scene.extend({
         if(this.layer.getParent() == null )this.addChild(this.layer);
     }
 });
-
-MenuScreen

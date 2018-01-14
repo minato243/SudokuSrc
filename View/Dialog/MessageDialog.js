@@ -22,7 +22,8 @@ var MessageDialog = BasePopupDialog.extend({
         var bgTitle = bgImage.getChildByName("bg_title");
 
         this.titleLabel = bgTitle.getChildByName("lb_title");
-        this.messageLabel = bgImage.getChildByName("lb_message");
+        var messageLabel = bgImage.getChildByName("lb_message");
+        messageLabel.setString("");
 
         this.acceptButton = bgImage.getChildByName("btn_accept");
         this.acceptButton.addTouchEventListener(this.onAcceptClick, this);
@@ -31,6 +32,11 @@ var MessageDialog = BasePopupDialog.extend({
 
         this.acceptLabel = this.acceptButton.getChildByName("lb_accept");
         this.cancelLabel = this.cancelButton.getChildByName("lb_cancel");
+
+        this.messageLabel = new cc.LabelBMFont("", res.FONT_TW_CONDENSED_32, bgImage.getContentSize().width - 40, cc.TEXT_ALIGNMENT_CENTER);
+        this.messageLabel.setColor({r:255, g:163, b:64});
+        messageLabel.getParent().addChild(this.messageLabel);
+        this.messageLabel.setPosition(messageLabel.getPosition());
     },
 
     startDialog: function(acceptCallBack, callBackFunc, title, message){

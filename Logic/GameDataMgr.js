@@ -11,7 +11,7 @@ var SCORE_PER_ERROR = 10;
 var SCORE_PER_GOLD = 10;
 
 var GameDataMgr = cc.Class.extend({
-    gold: 0,
+    gold: 50,
     currentLevel: 1,
     mapItemDataList:[],
 
@@ -106,7 +106,6 @@ GameDataMgr.TAG = "GameDataMgr ";
 GameDataMgr.getInstance = function(){
     if(GameDataMgr.instance == null){
         GameDataMgr.instance = new GameDataMgr();
-        GameDataMgr.instance.retain();
     }
     return GameDataMgr.instance;
 };

@@ -272,8 +272,12 @@ var PlayLayer = cc.Layer.extend({
             cc.log("onClickHintButton");
             SoundManager.playClickSound();
             var cost = (this.useHintTime +1) * 5;
-            if(!GameDataMgr.instance.canUseGold(-cost)) return;
+            if(!GameDataMgr.instance.canUseGold(-cost)) {
+                this.showVideoRewardAdmob();
+                return;
+            }
             GameDataMgr.instance.addGold(-cost);
+            if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
 
             this.showSubGoldEffect(cost);
             this.board.hint();
@@ -354,6 +358,7 @@ var PlayLayer = cc.Layer.extend({
         GameOverDialog.startDialog(false, Math.floor(this.getParent().time), this.board.numError);
         this.getParent().stopTimeCounter();
         SoundManager.playLostSound();
+        if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
     },
 
     showYouWinDialog: function() {
@@ -363,6 +368,7 @@ var PlayLayer = cc.Layer.extend({
         SoundManager.playWonSound();
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();
+        if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
     },
 
     createNewGame: function(){
@@ -427,7 +433,12 @@ var PlayLayer = cc.Layer.extend({
     doBackPress: function(){
         cc.log("doBackPress");
         ScreenMgr.getInstance().changeScreen(MAP_SCREEN);
+    },
+
+    showVideoRewardAdmob: function(){
+        sdkbox.Admob.show(ADMOB_VIDEO_REWARD);
     }
+
 
 });
 

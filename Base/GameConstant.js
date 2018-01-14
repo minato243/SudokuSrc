@@ -29,3 +29,7 @@ var SOUND_ON = true;
 var SOUND_OFF = false;
 
 var SELECTED_COLOR = { r: 255, g:255, b:152};
+
+var ADMOB_BANNER = "sudoku_banner";
+var ADMOB_INTERSTITIAL = "sudoku_interstitial";
+var ADMOB_VIDEO_REWARD = "sudoku_video_reward";

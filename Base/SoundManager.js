@@ -27,7 +27,7 @@ var SoundManager = cc.Class.extend({
 
     setMusicOn: function(){
         this.status = SOUND_ON;
-        SoundManager.playBackgroundMusic();
+        //SoundManager.playBackgroundMusic();
     },
 
     setMusicOff: function(){

@@ -44,13 +44,13 @@ var LoadingScreen = cc.Scene.extend({
         this._super();
         this.loadingLayer = new LoadingScreenLayer();
         this.addChild(this.loadingLayer);
-        this.schedule(this.updateProgressBar,0.1);
+        this.schedule(this.updateProgressBar,0.0625);
     },
 
     updateProgressBar: function(delta){
         this.progress += delta *50;
         cc.log("updateProgressBar "+this.progress.toString());
-        if(this.progress >=100){
+        if(this.progress >100){
             this.unschedule(this.updateProgressBar);
             ScreenMgr.getInstance().changeScreen(MENU_SCREEN);
             return;

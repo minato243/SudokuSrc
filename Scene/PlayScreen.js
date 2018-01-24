@@ -368,7 +368,7 @@ var PlayLayer = cc.Layer.extend({
         SoundManager.playWonSound();
 
         var totalScore = GameDataMgr.getScore(time, this.board.numError);
-        PlatformUtils.updateScore(totalScore);
+        PlatformUtils.getInstance().updateScore(totalScore);
 
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();

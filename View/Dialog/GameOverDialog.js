@@ -19,6 +19,7 @@ var GameOverDialog = BasePopupDialog.extend({
 
     timeScore: 0,
     errorScore:0,
+    totalScore: 0,
     numStar:0,
 
     curPercent:0,
@@ -63,10 +64,10 @@ var GameOverDialog = BasePopupDialog.extend({
 
         this.timeScore = GameDataMgr.convertFromTimeToScore(this.time);
         this.errorScore = GameDataMgr.convertFromErrorToScore(this.error);
+        this.totalScore = GameDataMgr.getScore(this.time, this.error);
         this.setStringForScoreLabel(this.timeScore, this.errorScore);
 
-        var totalScore = this.timeScore - this.errorScore;
-        this.numStar = GameDataMgr.convertFromScoreToStar(totalScore);
+        this.numStar = GameDataMgr.convertFromScoreToStar(this.totalScore);
         this.showStar(this.numStar);
     },
 

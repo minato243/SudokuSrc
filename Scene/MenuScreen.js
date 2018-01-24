@@ -26,7 +26,6 @@ var MenuScreenLayer = cc.Layer.extend({
 
         this.highScoreButton = mainScreen.node.getChildByName("btn_high_score");
         this.highScoreButton.addTouchEventListener(this.onClickHighScoreButton, this);
-        this.highScoreButton.setVisible(false);
 
         this.achievementButton = mainScreen.node.getChildByName("btn_achievement");
         this.achievementButton.addTouchEventListener(this.onClickAchievementButton, this);
@@ -51,7 +50,7 @@ var MenuScreenLayer = cc.Layer.extend({
         });
         cc.eventManager.addListener(keyboardListener, this.bgImage);
 
-        this.initAdmob();
+        //this.initAdmob();
         return true;
     },
 
@@ -112,7 +111,7 @@ var MenuScreenLayer = cc.Layer.extend({
             //todo
             SoundManager.playClickSound();
             cc.warn("onClickShareButton");
-            PlatformUtils.getInstance().callAndroidFunction("com.biggame.sudoku.AndroidUtils","shareMyApp","()V");
+            PlatformUtils.getInstance().shareMyApp();
         }
     },
 
@@ -120,6 +119,7 @@ var MenuScreenLayer = cc.Layer.extend({
         if(controlEvent == ccui.Widget.TOUCH_ENDED){
             //todo
             SoundManager.playClickSound();
+            PlatformUtils.getInstance().showHighScore();
             cc.error("onClickHighScoreButton");
         }
     },
@@ -179,5 +179,6 @@ var MenuScreen = cc.Scene.extend({
         this._super();
         this.layer = MenuScreenLayer.getInstance();
         if(this.layer.getParent() == null )this.addChild(this.layer);
+        PlatformUtils.getInstance().signInGoogle();
     }
 });

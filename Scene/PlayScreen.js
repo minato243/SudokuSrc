@@ -366,6 +366,10 @@ var PlayLayer = cc.Layer.extend({
         GameOverDialog.startDialog(true, time, this.board.numError);
         this.getParent().stopTimeCounter();
         SoundManager.playWonSound();
+
+        var totalScore = GameDataMgr.getScore(time, this.board.numError);
+        PlatformUtils.updateScore(totalScore);
+
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();
         if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);

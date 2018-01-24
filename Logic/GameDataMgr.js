@@ -137,6 +137,14 @@ GameDataMgr.convertFromLevelToDifficult = function(level){
 
 };
 
+GameDataMgr.getScore = function(second, numError){
+    var timeScore = GameDataMgr.convertFromTimeToScore(second);
+    var errorScore = GameDataMgr.convertFromErrorToScore(numError);
+    var score = timeScore - errorScore;
+
+    return score;
+};
+
 GameDataMgr.convertFromTimeToScore = function(second){
     var score = TIME_EXPECT - second;
     if(score <0) score = 0;

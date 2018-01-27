@@ -64,7 +64,7 @@ var MapItem = cc.Class.extend({
             this.starList[i].setVisible(true);
         }
 
-        for (var i = this.data.numStar; i < 3; i ++){
+        for (i = this.data.numStar; i < 3; i ++){
             this.starList[i].setVisible(false);
         }
     },

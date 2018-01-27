@@ -1,14 +1,15 @@
-/**
- * Created by thaod on 12/7/2017.
+/**Created by thaod on 12/7/2017.
  */
 var KEY_GOLD = "gold";
 var KEY_LEVEL = "level";
 var KEY_MAP_ITEM_LIST = "map_item_list";
 
-var COMPLETE_SCORE = 100;
+var COMPLETE_SCORE = 200;
 var TIME_EXPECT = 300;
 var SCORE_PER_ERROR = 10;
 var SCORE_PER_GOLD = 10;
+var START_GOLD = 50;
+var SCORE_PER_LEVEL = 5;
 
 var GameDataMgr = cc.Class.extend({
     gold: 50,
@@ -23,7 +24,7 @@ var GameDataMgr = cc.Class.extend({
 
     loadData: function(){
         this.gold = GameDataMgr.getCache(KEY_GOLD, 0);
-        if(this.gold == undefined || typeof(this.gold) != "number") this.gold = 0;
+        if(this.gold == undefined || typeof(this.gold) != "number") this.gold = START_GOLD;
         this.currentLevel = GameDataMgr.getCache(KEY_LEVEL, 1);
         if(this.currentLevel == undefined) this.currentLevel = 1;
 
@@ -41,7 +42,7 @@ var GameDataMgr = cc.Class.extend({
                 if(mapItemData != null)this.mapItemDataList.push(mapItemData);
             }
 
-            for (var i = 0 ;i < this.mapItemDataList.length; i++){
+            for (i = 0 ;i < this.mapItemDataList.length; i++){
                 cc.log(this.mapItemDataList[i].toString());
             }
         }
@@ -75,16 +76,15 @@ var GameDataMgr = cc.Class.extend({
     },
 
     updateMapItemData: function(level, time, error){
-        var score = GameDataMgr.convertFromTimeToScore(time);
-        score = score - GameDataMgr.convertFromErrorToScore(error);
-        var star = GameDataMgr.convertFromScoreToStar(score);
+        var score = GameDataMgr.getScore(level, time, error);
+        var star = GameDataMgr.convertFromScoreToStar(score, level);
         cc.log("updateMapItemData" + level.toString());
         if(star > this.mapItemDataList[level -1].numStar){
             this.mapItemDataList[level -1].numStar = star;
             if(level < this.mapItemDataList.length) this.mapItemDataList[level].status = UN_LOCK;
         }
-        var bonusGold = GameDataMgr.convertFromScoreToGold(score);
-        this.gold += bonusGold;
+
+        this.gold += GameDataMgr.convertFromScoreToGold(score);
         if(this.currentLevel == level) this.currentLevel = level +1;
         this.saveData();
     },
@@ -128,27 +128,26 @@ GameDataMgr.getCache = function(key, defaultValue){
 };
 
 GameDataMgr.convertFromLevelToDifficult = function(level){
-    var difficult = Math.floor((level-1) / NUM_LEVEL_ONE_MAP);
-
-    if(difficult == 0) return LEVEL_EASY;
-    if(difficult == 1) return LEVEL_MEDIUM;
-    if(difficult == 2) return LEVEL_HARD;
-    if(difficult == 3) return LEVEL_VERY_HARD;
-
+    var difficult = Math.floor((level-1) / NUM_LEVEL_ONE_DIFFICULT);
+    cc.log("difficult "+difficult);
+    return difficult;
 };
 
-GameDataMgr.getScore = function(second, numError){
+GameDataMgr.getScore = function(level, second, numError){
+    var completeScore = GameDataMgr.getCompleteScore(level);
     var timeScore = GameDataMgr.convertFromTimeToScore(second);
     var errorScore = GameDataMgr.convertFromErrorToScore(numError);
-    var score = timeScore - errorScore;
 
-    return score;
+    return completeScore + timeScore - errorScore;
+};
+
+GameDataMgr.getCompleteScore = function(level){
+    return COMPLETE_SCORE + level * SCORE_PER_LEVEL;
 };
 
 GameDataMgr.convertFromTimeToScore = function(second){
     var score = TIME_EXPECT - second;
     if(score <0) score = 0;
-    score = score + COMPLETE_SCORE ;
 
     return score;
 };
@@ -162,8 +161,10 @@ GameDataMgr.convertFromScoreToGold = function(score){
     return Math.floor(score / SCORE_PER_GOLD);
 };
 
-GameDataMgr.convertFromScoreToStar = function(score){
-    var maxScore = TIME_EXPECT + COMPLETE_SCORE;
+GameDataMgr.convertFromScoreToStar = function(score, level){
+    var completeScore = GameDataMgr.getCompleteScore(level);
+    var maxScore = TIME_EXPECT + completeScore;
+    cc.log("convertFromScoreToStar "+ maxScore+" "+ score + " "+level);
     if(score > maxScore /2) return 3;
     if(score > maxScore /4) return 2;
     if(score >0) return 1;

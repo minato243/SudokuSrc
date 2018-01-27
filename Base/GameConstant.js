@@ -21,6 +21,7 @@ var PLAY_SCREEN = 4;
 var NUM_LEVEL_ONE_MAP = 15;
 var NUM_TOTAL_LEVEL = 60;
 var NUM_GROUP = 4;
+var NUM_LEVEL_ONE_DIFFICULT = 5;
 
 var LOCK = true;
 var UN_LOCK = false;

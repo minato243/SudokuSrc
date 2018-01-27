@@ -1,4 +1,7 @@
 var SIZE_OF_CELL = 46;
+var LOSE = false;
+var WIN = true;
+
 var PlayLayer = cc.Layer.extend({
     sprite: null,
     board: null,
@@ -356,7 +359,7 @@ var PlayLayer = cc.Layer.extend({
     },
 
     gameOver: function () {
-        GameOverDialog.startDialog(false, Math.floor(this.getParent().time), this.board.numError);
+        GameOverDialog.startDialog(LOSE, Math.floor(this.getParent().time), this.board.numError, this.level);
         this.getParent().stopTimeCounter();
         SoundManager.playLostSound();
         if(Math.random() % 2 == 1) PlatformUtils.showInterstitialAd();
@@ -364,11 +367,11 @@ var PlayLayer = cc.Layer.extend({
 
     showYouWinDialog: function() {
         var time = Math.floor(this.getParent().time);
-        GameOverDialog.startDialog(true, time, this.board.numError);
+        GameOverDialog.startDialog(WIN, time, this.board.numError, this.level);
         this.getParent().stopTimeCounter();
         SoundManager.playWonSound();
 
-        var totalScore = GameDataMgr.getScore(time, this.board.numError);
+        var totalScore = GameDataMgr.getScore(this.level, time, this.board.numError);
         PlatformUtils.getInstance().updateScore(totalScore);
 
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
@@ -523,4 +526,4 @@ PlayScene.getInstance = function(){
         PlayScene.instance.retain();
     }
     return PlayScene.instance;
-}
+};

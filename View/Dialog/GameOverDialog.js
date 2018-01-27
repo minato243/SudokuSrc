@@ -16,6 +16,7 @@ var GameOverDialog = BasePopupDialog.extend({
     isVictory: false,
     error: 0,
     time: 0,
+    level:1,
 
     timeScore: 0,
     errorScore:0,
@@ -62,9 +63,9 @@ var GameOverDialog = BasePopupDialog.extend({
         this.titleLabel.setString("You Win");
         this.newGameLabel.setString("Next Level");
 
-        this.timeScore = GameDataMgr.convertFromTimeToScore(this.time);
+        this.timeScore = GameDataMgr.convertFromTimeToScore(this.time) + GameDataMgr.getCompleteScore(this.level);
         this.errorScore = GameDataMgr.convertFromErrorToScore(this.error);
-        this.totalScore = GameDataMgr.getScore(this.time, this.error);
+        this.totalScore = GameDataMgr.getScore(this.level, this.time, this.error);
         this.setStringForScoreLabel(this.timeScore, this.errorScore);
 
         this.numStar = GameDataMgr.convertFromScoreToStar(this.totalScore);
@@ -215,11 +216,12 @@ GameOverDialog.getInstance = function(){
 };
 
 
-GameOverDialog.startDialog = function(win, time, numError){
+GameOverDialog.startDialog = function(win, time, numError, level){
     var dialog = GameOverDialog.getInstance();
     if(arguments.length ==3){
         dialog.time = time;
         dialog.error = numError;
+        dialog.level = level;
     }
 
     dialog.isVictory = win;

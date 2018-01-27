@@ -10,12 +10,20 @@ var PlatformUtils = cc.Class.extend({
         this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT,"shareMyApp","()V");
     },
 
+    rateApp: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT,"rateMyApp","()V");
+    },
+
     showHighScore: function(){
         this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "showRanking","()V");
     },
 
     updateScore: function(score){
         this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "updateHighScore", "(I)V", score);
+    },
+
+    showInterstitialAd: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "showInterstitialAd", "()V")
     },
 
     callAndroidFunction: function(className, methodName, methodSignature, parameters){

@@ -271,13 +271,14 @@ var PlayLayer = cc.Layer.extend({
         if (controlEvent == ccui.Widget.TOUCH_ENDED) {
             cc.log("onClickHintButton");
             SoundManager.playClickSound();
+            PlatformUtils.getInstance().showInterstitialAd();
             var cost = (this.useHintTime +1) * 5;
             if(!GameDataMgr.instance.canUseGold(-cost)) {
-                this.showVideoRewardAdmob();
+                //this.showVideoRewardAdmob();
                 return;
             }
             GameDataMgr.instance.addGold(-cost);
-            if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
+
 
             this.showSubGoldEffect(cost);
             this.board.hint();
@@ -358,7 +359,7 @@ var PlayLayer = cc.Layer.extend({
         GameOverDialog.startDialog(false, Math.floor(this.getParent().time), this.board.numError);
         this.getParent().stopTimeCounter();
         SoundManager.playLostSound();
-        if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
+        if(Math.random() % 2 == 1) PlatformUtils.showInterstitialAd();
     },
 
     showYouWinDialog: function() {
@@ -372,7 +373,7 @@ var PlayLayer = cc.Layer.extend({
 
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();
-        if(Math.random() % 2 == 1) sdkbox.PluginAdMob.show(ADMOB_INTERSTITIAL);
+        if(Math.random() % 2 == 1) PlatformUtils.showInterstitialAd();
     },
 
     createNewGame: function(){

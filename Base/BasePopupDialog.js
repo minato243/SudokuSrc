@@ -42,7 +42,7 @@ var BasePopupDialog = cc.Layer.extend({
         this.stopAllActions();
         this.removeFromParent(true);
         //ScreenMgr.getInstance().currentScreen.removeChild(this);
-    },
+    }
 
 });
 

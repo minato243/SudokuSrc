@@ -12,7 +12,7 @@ var res = {
     mapScenePlist: {type: "plist", src: "res/mapScene.plist"},
 
     clickSound: "res/sound/click.mp3",
-    rightSound: "res/sound/right.mp3",
+    rightSound: "res/sound/right.wav",
     wrongSound: "res/sound/wrong.mp3",
     wonSound: "res/sound/won.mp3",
     lostSound: "res/sound/lost.mp3",

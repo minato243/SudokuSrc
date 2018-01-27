@@ -14,28 +14,27 @@ var MenuScreenLayer = cc.Layer.extend({
         var mainScreen = ccs.load(res.MainScene_json);
         this.addChild(mainScreen.node);
 
-        var playButton = mainScreen.node.getChildByName("btn_play");
+        this.bgImage = mainScreen.node.getChildByName("bgImage");
+        var playButton = this.bgImage.getChildByName("btn_play");
         playButton.addTouchEventListener(this.startGame, this);
 
-        this.volumeButton = mainScreen.node.getChildByName("btn_volume");
+        this.volumeButton = this.bgImage.getChildByName("btn_volume");
         this.volumeButton.addTouchEventListener(this.onClickVolumeButton, this);
 
-        this.shareButton = mainScreen.node.getChildByName("btn_share");
+        this.shareButton = this.bgImage.getChildByName("btn_share");
         this.shareButton.addTouchEventListener(this.onClickShareButton, this);
         this.shareButton.setVisible(true);
 
-        this.highScoreButton = mainScreen.node.getChildByName("btn_high_score");
+        this.highScoreButton = this.bgImage.getChildByName("btn_high_score");
         this.highScoreButton.addTouchEventListener(this.onClickHighScoreButton, this);
 
-        this.achievementButton = mainScreen.node.getChildByName("btn_achievement");
+        this.achievementButton = this.bgImage.getChildByName("btn_achievement");
         this.achievementButton.addTouchEventListener(this.onClickAchievementButton, this);
         this.achievementButton.setVisible(false);
 
-        this.settingButton = mainScreen.node.getChildByName("btn_setting");
+        this.settingButton = this.bgImage.getChildByName("btn_setting");
         this.settingButton.addTouchEventListener(this.onClickSettingButton, this);
         this.settingButton.setVisible(false);
-
-        this.bgImage = mainScreen.node.getChildByName("bgImage");
 
         var keyboardListener = cc.EventListener.create({
             event: cc.EventListener.KEYBOARD,

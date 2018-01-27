@@ -95,8 +95,8 @@ var Board = cc.Class.extend({
 	},
 
 	remove:function(level) {
-		var temp = [ 20, 23, 25, 27, 30, 33, 35, 40, 45, 50, 55, 60, 65 ];
-		temp =[1, 2,3,4,5,6,7,8,9,10,11,12];
+		var temp = [ 20, 23, 25, 27, 30, 33, 35, 40, 45, 50, 55, 60, 65];
+		//temp =[1, 2,3,4,5,6,7,8,9,10,11,12];
 		for (var i = 0; i < temp[level]; i++) {
 			var row = Math.floor(Math.random() * SIZE);
 			var col = Math.floor(Math.random() * SIZE);

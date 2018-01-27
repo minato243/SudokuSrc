@@ -68,7 +68,7 @@ var GameOverDialog = BasePopupDialog.extend({
         this.totalScore = GameDataMgr.getScore(this.level, this.time, this.error);
         this.setStringForScoreLabel(this.timeScore, this.errorScore);
 
-        this.numStar = GameDataMgr.convertFromScoreToStar(this.totalScore);
+        this.numStar = GameDataMgr.convertFromScoreToStar(this.totalScore, this.level);
         this.showStar(this.numStar);
     },
 
@@ -218,7 +218,7 @@ GameOverDialog.getInstance = function(){
 
 GameOverDialog.startDialog = function(win, time, numError, level){
     var dialog = GameOverDialog.getInstance();
-    if(arguments.length ==3){
+    if(arguments.length == 4){
         dialog.time = time;
         dialog.error = numError;
         dialog.level = level;

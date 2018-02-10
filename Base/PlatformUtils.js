@@ -26,12 +26,39 @@ var PlatformUtils = cc.Class.extend({
         this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "showInterstitialAd", "()V")
     },
 
+    showVideoRewardAd: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "showVideoRewardAd", "()V");
+    },
+
+    initBanner: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "initBanner", "()V");
+    },
+
+    showBanner: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "showBanner", "()V");
+    },
+
+    hideBanner: function(){
+        this.callAndroidFunction(PlatformUtils.CLASS_DEFAULT, "hideBanner", "()V");
+    },
+
     callAndroidFunction: function(className, methodName, methodSignature, parameters){
+        if(sys.platform ==  sys.WIN32) return;
         var returnValue;
         if(parameters == undefined) returnValue = jsb.reflection.callStaticMethod(className, methodName,methodSignature);
         else returnValue = jsb.reflection.callStaticMethod(className, methodName,methodSignature, parameters);
         cc.log("PlatformUtils.callAndroidFunction "+ returnValue);
+    },
+
+    javaCallBackAddGold: function(num){
+        GameDataMgr.getInstance().addGold(num);
+        var playScene = PlayScene.getInstance();
+        if(playScene != null && playScene.isRunning()) {
+            playScene.layer.updateCoin();
+            playScene.layer.showAddGoldEffect(num);
+        }
     }
+
 });
 
 PlatformUtils.instance = null;

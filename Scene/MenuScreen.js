@@ -151,8 +151,10 @@ var MenuScreenLayer = cc.Layer.extend({
 
     onBackPress: function(){
         this.acceptCallBack = cc.callFunc(this.doBackPress, this);
-        MessageDialog.getInstance().startDialog(this.acceptCallBack, null, "Exit Game", "Are you sure want to exit game?");
-        MessageDialog.getInstance().setAcceptLabel("Exit");
+        var dialog = MessageDialog.getInstance();
+        dialog.startDialog(this.acceptCallBack, null, "Exit Game", "Are you sure want to exit game?");
+        dialog.setAcceptLabel("Exit");
+        dialog.setCancelLabel("Cancel");
     },
 
     doBackPress: function(){

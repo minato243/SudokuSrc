@@ -3,6 +3,9 @@
 var KEY_GOLD = "gold";
 var KEY_LEVEL = "level";
 var KEY_MAP_ITEM_LIST = "map_item_list";
+var KEY_CURRENT_LEVEL = "current_level";
+var KEY_CURRENT_LEVEL_DATA = "current_level_data";
+var KEY_CURRENT_TIME = "current_time";
 
 var COMPLETE_SCORE = 200;
 var TIME_EXPECT = 300;
@@ -120,16 +123,21 @@ GameDataMgr.saveCache = function(key, value){
 GameDataMgr.getCache = function(key, defaultValue){
     var jsonKey = JSON.stringify(key);
     var jsonValue = cc.sys.localStorage.getItem(jsonKey);
-    cc.log("jsonValue = " + jsonValue);
-    if(jsonValue == null || jsonValue == undefined) return defaultValue;
-    var value = JSON.parse(jsonValue);
-    cc.log(GameDataMgr.TAG+"getCache[key = "+ key+",value = "+value+ "]");
+    if(jsonValue == null || jsonValue == undefined || jsonValue =="")
+        return defaultValue;
+    var value =defaultValue;
+    try{
+        value = JSON.parse(jsonValue);
+    } catch(e){
+        cc.log(GameDataMgr.TAG + " JsonParseException");
+    }
+    cc.log(GameDataMgr.TAG+" getCache[key = "+ key+",value = "+value+ "]");
     return value;
 };
 
 GameDataMgr.convertFromLevelToDifficult = function(level){
     var difficult = Math.floor((level-1) / NUM_LEVEL_ONE_DIFFICULT);
-    cc.log("difficult "+difficult);
+    cc.log(GameDataMgr.TAG + " convertFromLevelToDifficult "+difficult);
     return difficult;
 };
 
@@ -164,7 +172,7 @@ GameDataMgr.convertFromScoreToGold = function(score){
 GameDataMgr.convertFromScoreToStar = function(score, level){
     var completeScore = GameDataMgr.getCompleteScore(level);
     var maxScore = TIME_EXPECT + completeScore;
-    cc.log("convertFromScoreToStar "+ maxScore+" "+ score + " "+level);
+    cc.log(GameDataMgr.TAG +" convertFromScoreToStar "+ maxScore+" "+ score + " "+level);
     if(score > maxScore /2) return 3;
     if(score > maxScore /4) return 2;
     if(score >0) return 1;

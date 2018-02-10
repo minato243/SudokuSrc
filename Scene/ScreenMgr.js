@@ -19,6 +19,8 @@ var ScreenMgr = cc.Class.extend({
             {
                 this.currentScreen = new MenuScreen();
                 cc.director.runScene(new cc.TransitionFade(0.5, this.currentScreen));
+                PlatformUtils.getInstance().initBanner();
+                PlatformUtils.getInstance().showBanner();
                 break;
             }
 
@@ -26,6 +28,7 @@ var ScreenMgr = cc.Class.extend({
             {
                 this.currentScreen = PlayScene.getInstance();
                 cc.director.runScene(new cc.TransitionFade(0.5, this.currentScreen));
+                PlatformUtils.getInstance().hideBanner();
                 break;
             }
 
@@ -33,6 +36,7 @@ var ScreenMgr = cc.Class.extend({
             {
                 this.currentScreen = MapScene.getInstance();
                 cc.director.runScene(new cc.TransitionFade(0.5, this.currentScreen));
+                PlatformUtils.getInstance().hideBanner();
                 break;
             }
 

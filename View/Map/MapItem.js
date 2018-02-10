@@ -73,21 +73,42 @@ var MapItem = cc.Class.extend({
         Utility.setScaleWhenTouchButton(sender, controlEvent);
 
         if(controlEvent == ccui.Widget.TOUCH_ENDED){
-            cc.log(this.TAG + "onButtonClick");
-            
             if(this.data.status == UN_LOCK) this.startGame();
             else this.showLockNotify();
         }
     },
 
     startGame: function(){
+        var level = GameDataMgr.getCache(KEY_CURRENT_LEVEL, 0);
+        if (this.data.level == level) this.showPlayingDialog();
+        else this.doStartNewGame();
+    },
+
+    doStartNewGame: function(){
         ScreenMgr.getInstance().changeScreen(PLAY_SCREEN);
         var playScreen = ScreenMgr.getInstance().currentScreen;
         playScreen.startNewGame(this.data.level);
     },
 
+    doLoadCurrentGame: function(){
+        cc.log("MapItem.doLoadCurrentGame");
+        ScreenMgr.getInstance().changeScreen(PLAY_SCREEN);
+        var playScreen = ScreenMgr.getInstance().currentScreen;
+        playScreen.loadCurrentGame(this.data.level);
+    },
+
+
     showLockNotify: function(){
         //todo
+    },
+
+    showPlayingDialog: function(){
+        var acceptCallBack = cc.callFunc(this.doLoadCurrentGame, this);
+        var closeCallBack = cc.callFunc(this.doStartNewGame, this);
+        var dialog = MessageDialog.getInstance();
+        dialog.startDialog(acceptCallBack, closeCallBack, "Notify", "Do you want to load last map you have played?" );
+        dialog.setAcceptLabel("Resume");
+        dialog.setCancelLabel("New Game");
     },
 
     setData: function(data)

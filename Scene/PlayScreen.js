@@ -22,6 +22,7 @@ var PlayLayer = cc.Layer.extend({
     bgImage: null,
     level : LEVEL_EASY,
     useHintTime: 0,
+    countNumberLabelList: [],
 
     acceptCallBack: null,
 
@@ -39,6 +40,7 @@ var PlayLayer = cc.Layer.extend({
         this.labelList = [];
         this.buttonList = [];
         this.tempLabelList = [];
+        this.countNumberLabelList = [];
         for (var i = 0; i < SIZE; i++) {
             cc.log("ctor function " + i.toString());
             this.labelList.push([]);
@@ -46,6 +48,8 @@ var PlayLayer = cc.Layer.extend({
             btn.setTag(i);
             btn.addTouchEventListener(this.onButtonClick, this);
             this.buttonList.push(btn);
+            var label = btn.getChildByName("lb_num");
+            this.countNumberLabelList.push(label);
         }
         this.board = new Board(LEVEL_EASY);
         this.posX = [49, 95, 141, 190, 237, 284, 331, 377, 425];
@@ -114,10 +118,10 @@ var PlayLayer = cc.Layer.extend({
                     this.labelList[i][j] = new cc.LabelTTF("", "Arial", 36);
                     this.addChild(this.labelList[i][j], 10);
                 }
-                this.labelList[i][j].setString(matrix[i][j].toString());
                 this.setPositionForLabel(this.labelList[i][j], i, j);
-                if (matrix[i][j] == 0) this.labelList[i][j].setVisible(false);
+                if (matrix[i][j] == 0 || matrix[i][j] == undefined) this.labelList[i][j].setVisible(false);
                 else {
+                    this.labelList[i][j].setString(matrix[i][j].toString());
                     this.labelList[i][j].setVisible(true);
                     if (matrix[i][j] == oMatrix[i][j]) this.labelList[i][j].setColor(BLACK);
                     else this.labelList[i][j].setColor(BROWN);
@@ -127,6 +131,7 @@ var PlayLayer = cc.Layer.extend({
         this.drawSelected();
         this.drawError();
         this.drawTempMatrix();
+        this.drawCountMatrix();
     },
 
     drawSelected: function () {
@@ -211,6 +216,14 @@ var PlayLayer = cc.Layer.extend({
         }
     },
 
+    drawCountMatrix: function(){
+        var countMatrix = this.board.getCountMatrix();
+        if(countMatrix == undefined ) return;
+        for (var i = 0; i < SIZE; i ++){
+            this.countNumberLabelList[i].setString(countMatrix[i].toString());
+        }
+    },
+
     drawError: function () {
         var errorPoint = this.board.getError();
         if (errorPoint == null) return;
@@ -240,6 +253,8 @@ var PlayLayer = cc.Layer.extend({
     onBoardClick: function (x, y) {
         var touchPoint = this.convertFromPixelToPoint(x, y);
         cc.log("onBoardClick: " + touchPoint.x + "," + touchPoint.y);
+
+        if(!this.isValidPointInBoard(touchPoint)) return;
         this.board.setSelect(touchPoint);
         cc.log("board select (" + this.board.getSelect().x + ", " + this.board.getSelect().y + ")");
         this.updateBoard();
@@ -250,7 +265,11 @@ var PlayLayer = cc.Layer.extend({
             cc.log("onButtonClick");
             var tag = sender.getTag();
             if (this.isInsertMode) {
-                var r = this.board.insertIntoUserMatrix(this.board.getSelect().y, this.board.getSelect().x, tag + 1);
+                var selected = this.board.getSelect();
+                if(selected == undefined)
+                    return;
+
+                var r = this.board.insertIntoUserMatrix(selected.y, selected.x, tag + 1);
                 if (r == 0) {
                     SoundManager.playRightSound();
                     if(this.board.isFull()) this.showYouWinDialog();
@@ -274,14 +293,17 @@ var PlayLayer = cc.Layer.extend({
         if (controlEvent == ccui.Widget.TOUCH_ENDED) {
             cc.log("onClickHintButton");
             SoundManager.playClickSound();
-            PlatformUtils.getInstance().showInterstitialAd();
             var cost = (this.useHintTime +1) * 5;
             if(!GameDataMgr.instance.canUseGold(-cost)) {
-                //this.showVideoRewardAdmob();
+                var callBack = cc.callFunc(this.showVideoRewardAdmob, this);
+                var dialog = MessageDialog.getInstance();
+                dialog.startDialog(callBack, null, "NEED MORE GOLD", "Not enough gold. Do you want watch a video to get 30 gold?");
+                dialog.setAcceptLabel("Yes");
+                dialog.setCancelLabel("Cancel");
                 return;
             }
+            if(Math.random() % 2 == 0 ) PlatformUtils.getInstance().showInterstitialAd();
             GameDataMgr.instance.addGold(-cost);
-
 
             this.showSubGoldEffect(cost);
             this.board.hint();
@@ -362,7 +384,7 @@ var PlayLayer = cc.Layer.extend({
         GameOverDialog.startDialog(LOSE, Math.floor(this.getParent().time), this.board.numError, this.level);
         this.getParent().stopTimeCounter();
         SoundManager.playLostSound();
-        if(Math.random() % 2 == 1) PlatformUtils.showInterstitialAd();
+        PlatformUtils.showInterstitialAd();
     },
 
     showYouWinDialog: function() {
@@ -376,7 +398,7 @@ var PlayLayer = cc.Layer.extend({
 
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();
-        if(Math.random() % 2 == 1) PlatformUtils.showInterstitialAd();
+        PlatformUtils.showInterstitialAd();
     },
 
     createNewGame: function(){
@@ -384,7 +406,26 @@ var PlayLayer = cc.Layer.extend({
         this.isInsertMode = true;
 
         var difficultLevel = GameDataMgr.convertFromLevelToDifficult(this.level);
-        this.board = new Board(difficultLevel);
+        this.board = new Board();
+
+        this.board.createData(difficultLevel);
+
+        this.drawBoard();
+        this.showNumError();
+        this.updateLevel();
+        this.updateCoin();
+        this.updateModeButton();
+    },
+
+    loadCurrentGame: function(){
+        this.useHintTime =0;
+        this.isInsertMode = true;
+        this.time = GameDataMgr.getCache(KEY_CURRENT_TIME, 0);
+
+        cc.log("LOAD DATA FROM CACHE");
+        var dataString = GameDataMgr.getCache(KEY_CURRENT_LEVEL_DATA);
+        this.board.createDataFromString(dataString);
+
         this.drawBoard();
         this.showNumError();
         this.updateLevel();
@@ -420,7 +461,7 @@ var PlayLayer = cc.Layer.extend({
         var label = new cc.LabelBMFont("-"+cost, res.FONT_TW_CONDENSED_32);
         var pos = this.coinLabel.getPosition();
         this.coinLabel.getParent().addChild(label);
-        label.setPosition(pos);
+        label.setPosition(pos.x, pos.y);
 
         var action = cc.sequence(cc.spawn(cc.moveBy(2, cc.p(0, 10)), cc.FadeOut(2)), cc.callFunc(this.showSubGoldEffectComplete, this, label));
         label.setColor(cc.RED);
@@ -432,10 +473,32 @@ var PlayLayer = cc.Layer.extend({
         this.updateCoin();
     },
 
+    showAddGoldEffect: function(num){
+        var label = new cc.LabelBMFont("+"+num, res.FONT_TW_CONDENSED_32);
+        var pos = this.coinLabel.getPosition();
+        this.coinLabel.getParent().addChild(label);
+        label.setPosition(pos);
+
+        var action = cc.sequence(cc.spawn(cc.moveBy(2, cc.p(0, 10)), cc.FadeOut(2)), cc.callFunc(this.showAddGoldEffectComplete, this, label));
+        label.setColor(cc.GREEN);
+        label.runAction(action);
+    },
+
+    showAddGoldEffectComplete: function(node){
+        node.removeFromParent();
+        this.updateCoin();
+    },
+
+    showVideoRewardAdmob: function(){
+        PlatformUtils.getInstance().showVideoRewardAd();
+    },
+
     onBackPress: function(){
         this.acceptCallBack = cc.callFunc(this.doBackPress, this);
-        MessageDialog.getInstance().startDialog(this.acceptCallBack, null, "Quit Game", "Are you sure want to quit this game?");
-        MessageDialog.getInstance().setAcceptLabel("Quit");
+        var dialog = MessageDialog.getInstance();
+        dialog.startDialog(this.acceptCallBack, null, "Quit Game", "Are you sure want to quit this game?");
+        dialog.setAcceptLabel("Quit");
+        dialog.setCancelLabel("Cancel");
     },
 
     doBackPress: function(){
@@ -443,10 +506,24 @@ var PlayLayer = cc.Layer.extend({
         ScreenMgr.getInstance().changeScreen(MAP_SCREEN);
     },
 
-    showVideoRewardAdmob: function(){
-        sdkbox.Admob.show(ADMOB_VIDEO_REWARD);
-    }
+    saveCurrentData: function(){
+        if (this.board.isFull() || this.board.numError >= MAX_ERROR_IN_GAME)
+            return;
 
+        GameDataMgr.saveCache(KEY_CURRENT_LEVEL, this.level);
+        GameDataMgr.saveCache(KEY_CURRENT_TIME, this.time);
+        var dataString = this.board.getDataBoardString();
+        GameDataMgr.saveCache(KEY_CURRENT_LEVEL_DATA, dataString);
+    },
+
+    clearCurrentData: function(){
+        GameDataMgr.saveCache(KEY_CURRENT_LEVEL, -1);
+    },
+
+    isValidPointInBoard: function(point){
+        return point.x >= 0 && point.x <SIZE
+            && point.y >= 0 && point.y < SIZE;
+    }
 
 });
 
@@ -470,14 +547,20 @@ var PlayScene = cc.Scene.extend({
         this.time = 0;
 
         this.layer = PlayLayer.getInstance();
-        this.layer.drawBoard();
-        this.layer.showNumError();
+        //this.layer.drawBoard();
+        //this.layer.showNumError();
         this.addChild(this.layer);
     },
     
     onEnter:function () {
         this._super();
         this.scheduleUpdateTime();
+    },
+
+    onExit: function()
+    {
+        this.layer.saveCurrentData();
+        this._super();
     },
 
     scheduleUpdateTime: function(){
@@ -494,6 +577,10 @@ var PlayScene = cc.Scene.extend({
     startNewGame: function(level){
         this.layer.startNewGame(level);
         this.resetTime();
+    },
+
+    loadCurrentGame: function(level){
+        this.layer.loadCurrentGame(level);
     },
 
     restart: function(){

@@ -3,44 +3,53 @@ var Board = cc.Class.extend({
     userMatrix:[],
 	backupMatrix:[],
 	tempMatrix:[],
-    count:[],
+    countMatrix:[],
     selected: null,
     error: null,
-	numHint:3,
+	numHint:10,
     numError:0,
 
-    ctor: function(level){
-		cc.log("New board level = "+level);
+    ctor: function(){
 		this.matrix = [];
 		this.userMatrix = [];
 		this.backupMatrix = [];
 		this.tempMatrix = [];
+		this.countMatrix = [];
         for (var i = 0; i < SIZE; i++){
             this.matrix.push([]);
             this.userMatrix.push([]);
 			this.backupMatrix.push([]);
 			this.tempMatrix.push([]);
+			this.countMatrix[i] = 0;
         }
 		for (i = 0; i < SIZE; i++){
 			for (var j = 0; j < SIZE; j++){
 				this.tempMatrix[i].push([]);
 			}
 		}
-        this.createMatrix(level);
-        this.copyToUserMatrix();
-        this.createCountMatrix();
-		this.numHint = 3;
-        this.numError = 0;
-		this.selected = null;
     },
 
+	createData: function(level){
+		this.createMatrix(level);
+		this.copyToUserMatrix();
+		this.createCountMatrix();
+		this.numHint = 10;
+		this.numError = 0;
+		this.selected = null;
+	},
+
     createCountMatrix:function() {
-		this.count =[];
+		cc.log("Board create count matrix");
+		this.countMatrix =[];
 		for (var i = 0; i < SIZE; i++) {
+			this.countMatrix[i] = 0;
+		}
+
+		for (i = 0; i < SIZE; i++) {
 			for (var j = 0; j < SIZE; j++) {
 				if (this.userMatrix[i][j] == 0)
 					continue;
-				this.count[this.userMatrix[i][j] - 1]++;
+				this.countMatrix[this.userMatrix[i][j] - 1]++;
 			}
 		}
 	},
@@ -233,12 +242,12 @@ var Board = cc.Class.extend({
 	},
 
 	getCountMatrix: function() {
-		return this.count;
+		return this.countMatrix;
 	},
 
 	increaseCount: function(i) {
-		if (this.count[i - 1] < 9)
-			this.count[i - 1]++;
+		if (this.countMatrix[i - 1] < 9)
+			this.countMatrix[i - 1]++;
 	},
 
     /*
@@ -266,10 +275,14 @@ var Board = cc.Class.extend({
 			if (this.userMatrix[row][col] != 0) {
 				var  temp = this.userMatrix[row][col];
 				this.userMatrix[row][col] = val;
+
+				this.countMatrix[temp-1] --;
+				this.countMatrix[val-1] ++;
 				return temp;
 			} else {
 				this.userMatrix[row][col] = val;
 				this.tempMatrix[row][col] = [];
+				this.countMatrix[val-1] ++;
 			}
 			return 0;
 		} else {
@@ -314,9 +327,11 @@ var Board = cc.Class.extend({
 	},
 
 	hint: function(){
+		cc.log("Board.hint");
 		if(this.selected == null) return;
 		var i = this.selected.y;
 		var j = this.selected.x;
+		cc.log("Board.hint hint = "+ this.numHint +"(i,j)="+i+" "+j+ ", userMatrix "+this.userMatrix[i][j]+", backupMatrix "+this.backupMatrix[i][j]);
 		if(this.numHint > 0 && this.userMatrix[i][j] ==0){
 			this.numHint --;
 			this.userMatrix[i][j] = this.backupMatrix[i][j];
@@ -328,29 +343,135 @@ var Board = cc.Class.extend({
 		if(this.selected == null) return;
 		var i = this.selected.y;
 		var j = this.selected.x;
-
+		var value = this.userMatrix[i][j];
+		if(value > 0) this.countMatrix[value -1] --;
 		this.userMatrix[i][j] = 0;
 		this.tempMatrix[i][j] = [];
 	},
 
 	getMatrixString: function(){
-		var result ="-1";
+		var result ="";
 		for (var  i = 0; i < SIZE; i++){
 			for (var  j =0; j< SIZE; j++){
-				result+=","+this.matrix[i][j];
+				if(result == "") result = result + this.matrix[i][j];
+				else result+=","+this.matrix[i][j];
 			}
 		}
 		return result;
 	},
 
 	getUserMatrixString: function(){
-		var result ="-1";
+		var result ="";
 		for (var  i = 0; i < SIZE; i++){
 			for (var  j =0; j< SIZE; j++){
-				result+=","+this.userMatrix[i][j];
+				if(result == "") result = result + this.userMatrix[i][j];
+				else result+=","+this.userMatrix[i][j];
 			}
 		}
 		return result;
+	},
+
+	getTempMatrixString: function(){
+		var tempMatrixString = "";
+		for (var i = 0; i < SIZE; i++){
+			for (var j = 0; j < SIZE; j++){
+				if(this.tempMatrix[i][j] == undefined || this.tempMatrix[i][j].length == 0){
+					continue;
+				}
+				var n = this.tempMatrix[i][j].length;
+				if(tempMatrixString == "") tempMatrixString = i+","+j;
+				else tempMatrixString +="|"+i+","+j;
+				for (var k = 0; k < n; k ++){
+					tempMatrixString = tempMatrixString+","+this.tempMatrix[i][j][k];
+				}
+			}
+		}
+
+		 return tempMatrixString;
+	},
+
+	getBackupMatrixString: function(){
+		var result ="";
+		for (var  i = 0; i < SIZE; i++){
+			for (var  j =0; j< SIZE; j++){
+				if(result == "") result = result + this.backupMatrix[i][j];
+				else result+=","+this.backupMatrix[i][j];
+			}
+		}
+		return result;
+	},
+
+
+	getDataBoardString: function(){
+		var userMatrixString = this.getUserMatrixString();
+		var matrixString = this.getMatrixString();
+		var tempMatrixString = this.getTempMatrixString();
+		var backupMatrixString = this.getBackupMatrixString();
+
+		return userMatrixString
+			+ "."+ matrixString
+			+ "." + backupMatrixString
+			+ "." + tempMatrixString
+			+ "." + this.numError +"."+this.numHint;
+	},
+
+	createDataFromString: function(dataString){
+		var dataArray = dataString.split(".");
+		if(dataArray.length !=6) {
+			cc.log("Error createDataFromString "+ dataString);
+			return;
+		}
+
+		this.userMatrix = this.createMatrixFromString(dataArray[0]);
+		this.matrix = this.createMatrixFromString(dataArray[1]);
+		this.backupMatrix = this.createMatrixFromString(dataArray[2]);
+		this.createCountMatrix();
+
+		this.tempMatrix = this.createTempMatrixFromString(dataArray[3]);
+		this.numError = parseInt(dataArray[4]);
+		this.numHint = parseInt(dataArray[5]);
+
+		cc.log("createDataFromString "+ this.numError +" "+this.numHint);
+	},
+
+	createMatrixFromString: function(matrixString){
+		var matrix = [];
+
+		var numArray = matrixString.split(",");
+		for (var i = 0; i < SIZE; i ++){
+			matrix.push([]);
+			for (var j = 0; j < SIZE; j ++){
+				matrix[i].push(parseInt(numArray[i*SIZE+j]));
+			}
+		}
+
+		return matrix;
+	},
+
+	createTempMatrixFromString: function(tempMatrixString){
+		var matrix = [];
+		for (var i = 0; i < SIZE; i++){
+			matrix.push([]);
+			for (var j = 0; j < SIZE; j++){
+				matrix[i].push([]);
+			}
+		}
+
+		var numArrayIdxDataList = tempMatrixString.split("|");
+		var n = numArrayIdxDataList.length;
+
+		for (var idx = 0; idx < n; idx++){
+			var numArray = numArrayIdxDataList[idx].split(",");
+			i = parseInt(numArray[0]);
+			j = parseInt(numArray[1]);
+
+			for (var k = 2; k < numArray.length; k++){
+				matrix[i][j].push(parseInt(numArray[k]));
+			}
+
+		}
+
+		return matrix;
 	}
 
 });

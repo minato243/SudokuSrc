@@ -8,11 +8,11 @@ var KEY_CURRENT_LEVEL_DATA = "current_level_data";
 var KEY_CURRENT_TIME = "current_time";
 
 var COMPLETE_SCORE = 200;
-var TIME_EXPECT = 300;
-var SCORE_PER_ERROR = 10;
-var SCORE_PER_GOLD = 10;
+var TIME_EXPECT = 600;
+var SCORE_PER_ERROR = 5;
+var SCORE_PER_GOLD = 20;
 var START_GOLD = 50;
-var SCORE_PER_LEVEL = 5;
+var SCORE_PER_LEVEL = 10;
 
 var GameDataMgr = cc.Class.extend({
     gold: 50,
@@ -173,7 +173,7 @@ GameDataMgr.convertFromScoreToStar = function(score, level){
     var completeScore = GameDataMgr.getCompleteScore(level);
     var maxScore = TIME_EXPECT + completeScore;
     cc.log(GameDataMgr.TAG +" convertFromScoreToStar "+ maxScore+" "+ score + " "+level);
-    if(score > maxScore /2) return 3;
+    if(score > maxScore *3/4) return 3;
     if(score > maxScore /4) return 2;
     if(score >0) return 1;
     return 0;

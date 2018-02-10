@@ -52,10 +52,10 @@ var MessageDialog = BasePopupDialog.extend({
     },
 
     _removeFromParent: function(){
-        if(this.callBackFunc != null){
-            this.callBackFunc.execute();
-            this.callBackFunc.release();
-        }
+        //if(this.callBackFunc != null){
+        //    this.callBackFunc.execute();
+        //    this.callBackFunc.release();
+        //}
         this._super();
     },
 
@@ -92,6 +92,10 @@ var MessageDialog = BasePopupDialog.extend({
     onCancelClick: function(sender, controlEvent){
         if(controlEvent == ccui.Widget.TOUCH_ENDED){
             SoundManager.playClickSound();
+            if(this.callBackFunc != null){
+                this.callBackFunc.execute();
+                this.callBackFunc.release();
+            }
             this.closeDialog();
         }
     }

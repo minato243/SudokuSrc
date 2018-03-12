@@ -6,8 +6,9 @@ var KEY_MAP_ITEM_LIST = "map_item_list";
 var KEY_CURRENT_LEVEL = "current_level";
 var KEY_CURRENT_LEVEL_DATA = "current_level_data";
 var KEY_CURRENT_TIME = "current_time";
+var KEY_MAP_ITEM_LIST_2 = "map_item_list_2"
 
-var COMPLETE_SCORE = 200;
+var COMPLETE_SCORE = 250;
 var TIME_EXPECT = 600;
 var SCORE_PER_ERROR = 5;
 var SCORE_PER_GOLD = 20;
@@ -20,7 +21,7 @@ var GameDataMgr = cc.Class.extend({
     mapItemDataList:[],
 
     ctor: function(){
-        this.loadData();
+        this.loadData2();
         //this.createFirstData();
         //this.saveData();
     },
@@ -28,8 +29,8 @@ var GameDataMgr = cc.Class.extend({
     loadData: function(){
         this.gold = GameDataMgr.getCache(KEY_GOLD, 0);
         if(this.gold == undefined || typeof(this.gold) != "number") this.gold = START_GOLD;
-        this.currentLevel = GameDataMgr.getCache(KEY_LEVEL, 1);
-        if(this.currentLevel == undefined) this.currentLevel = 1;
+        this.currentLevel = GameDataMgr.getCache(KEY_LEVEL, 0);
+        if(this.currentLevel == undefined || this.currentLevel == 0) this.currentLevel = 1;
 
         var mapItemDataListStr = GameDataMgr.getCache(KEY_MAP_ITEM_LIST, "");
         if(mapItemDataListStr == ""){
@@ -65,6 +66,48 @@ var GameDataMgr = cc.Class.extend({
         //cc.log(GameDataMgr.TAG + "saveData[gold = "+ this.gold+", level = "+ this.currentLevel+", mapItemDataList = "+ this.mapItemDataList);
     },
 
+    loadData2: function(){
+        this.gold = GameDataMgr.getCache(KEY_GOLD, START_GOLD);
+        if(this.gold == undefined || typeof(this.gold) != "number") this.gold = START_GOLD;
+        this.currentLevel = GameDataMgr.getCache(KEY_LEVEL, 0);
+        if(this.currentLevel == undefined || this.currentLevel == 0) this.currentLevel = 1;
+
+        var mapItemDataListStr = GameDataMgr.getCache(KEY_MAP_ITEM_LIST_2, "");
+        if(mapItemDataListStr == ""){
+            this.loadData();
+            this.saveData2();
+        } else {
+            var mapItemStringArray = mapItemDataListStr.split("_");
+            this.mapItemDataList = [];
+            for (var i = 0; i < mapItemStringArray.length; i++){
+                var numStartStr = mapItemStringArray[i];
+                cc.log("mapItemStr = "+numStartStr);
+                var level = i+1;
+                var numStar =parseInt(numStartStr);
+                var status = LOCK;
+                if(level <= this.currentLevel) status = UN_LOCK;
+
+                var mapItemData = MapItemData.createFromNumStar(level, numStar, status);
+                if(mapItemData != null)this.mapItemDataList.push(mapItemData);
+            }
+
+            for (i = 0 ;i < this.mapItemDataList.length; i++){
+                cc.log(this.mapItemDataList[i].toString());
+            }
+        }
+    },
+
+    saveData2: function(){
+        GameDataMgr.saveCache(KEY_GOLD, this.gold);
+        GameDataMgr.saveCache(KEY_LEVEL, this.currentLevel);
+
+        var mapItemListStr = this.mapItemDataList[0].numStar.toString();
+        for (var i = 1; i < this.mapItemDataList.length; i ++){
+            mapItemListStr = mapItemListStr+"_"+this.mapItemDataList[i].numStar.toString();
+        }
+        GameDataMgr.saveCache(KEY_MAP_ITEM_LIST_2, mapItemListStr);
+    },
+
     createFirstData: function(){
         this.mapItemDataList = [];
         this.mapItemDataList.push(new MapItemData(1, UN_LOCK, 0 ));
@@ -89,7 +132,7 @@ var GameDataMgr = cc.Class.extend({
 
         this.gold += GameDataMgr.convertFromScoreToGold(score);
         if(this.currentLevel == level) this.currentLevel = level +1;
-        this.saveData();
+        this.saveData2();
     },
 
     addGold: function(numGold){
@@ -125,7 +168,7 @@ GameDataMgr.getCache = function(key, defaultValue){
     var jsonValue = cc.sys.localStorage.getItem(jsonKey);
     if(jsonValue == null || jsonValue == undefined || jsonValue =="")
         return defaultValue;
-    var value =defaultValue;
+    var value = defaultValue;
     try{
         value = JSON.parse(jsonValue);
     } catch(e){

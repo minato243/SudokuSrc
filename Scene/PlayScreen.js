@@ -511,7 +511,7 @@ var PlayLayer = cc.Layer.extend({
             return;
 
         GameDataMgr.saveCache(KEY_CURRENT_LEVEL, this.level);
-        GameDataMgr.saveCache(KEY_CURRENT_TIME, this.time);
+        GameDataMgr.saveCache(KEY_CURRENT_TIME, this.getParent().time);
         var dataString = this.board.getDataBoardString();
         GameDataMgr.saveCache(KEY_CURRENT_LEVEL_DATA, dataString);
     },

@@ -56,4 +56,13 @@ MapItemData.createFromString = function(data){
     mapItemData.status = (dataArray[1]=="true");
     mapItemData.numStar = parseInt(dataArray[2]);
     return mapItemData;
-}
+};
+
+MapItemData.createFromNumStar = function(level, numStar, status){
+    var mapItemData = new MapItemData();
+    mapItemData.level = level;
+    mapItemData.status = status;
+    mapItemData.numStar = numStar;
+
+    return mapItemData;
+};

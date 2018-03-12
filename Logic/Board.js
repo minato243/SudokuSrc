@@ -468,7 +468,6 @@ var Board = cc.Class.extend({
 			for (var k = 2; k < numArray.length; k++){
 				matrix[i][j].push(parseInt(numArray[k]));
 			}
-
 		}
 
 		return matrix;

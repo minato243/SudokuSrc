@@ -109,7 +109,7 @@ var MapLayer = cc.Layer.extend({
         var action = cc.repeatForever(cc.sequence(cc.scaleTo(0.5,1.1, 1.1 ), cc.scaleTo(0.5, 1,1)));
         var curLevel = GameDataMgr.getInstance().currentLevel;
         if(this.currentMap == Math.floor(curLevel / NUM_LEVEL_ONE_MAP)+1) {
-            cc.log("current map");
+            cc.log("current map "+ curLevel);
             this.itemList[(curLevel -1) % NUM_LEVEL_ONE_MAP].button.runAction(action);
         }
     },

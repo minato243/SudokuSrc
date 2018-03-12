@@ -9,6 +9,8 @@ var MapItem = cc.Class.extend({
     starList:[],
     levelLabel: null,
     data: null,
+    lockSize: null,
+    openSize: null,
 
     ctor: function(){
       this._super();
@@ -28,16 +30,21 @@ var MapItem = cc.Class.extend({
         this.levelLabel = this.button.getChildByName("lb_level");
 
         this.button.addTouchEventListener(this.onButtonClick, this);
+
+        this.lockSize = cc.Sprite.create("#ic_log_item.png").getContentSize();
+        this.openSize = cc.Sprite.create("#ic_ready.png").getContentSize();
         //Utility.getInstance().setScaleWhenTouch(this.button);
     },
 
     initData: function(){
         this.levelLabel.setString(this.data.level.toString());
         this.lockSprite.setVisible(this.data.status == LOCK);
-        var backgroundSprite = this.getBackgroundSpriteNameFromData();
-        var pressBackgroundSprite = this.getBackgroundSpriteNameFromData();
+        var backgroundSprite = this.getBackgroundSpriteNameFromData(this.data.status, this.data.numStar);
+        var pressBackgroundSprite = this.getBackgroundSpriteNameFromData(this.data.status, this.data.numStar);
         this.button.loadTextureNormal(backgroundSprite, ccui.Widget.PLIST_TEXTURE);
         this.button.loadTexturePressed(pressBackgroundSprite, ccui.Widget.PLIST_TEXTURE);
+
+        this.setPosition();
         this.showNumStar();
     },
 
@@ -50,11 +57,11 @@ var MapItem = cc.Class.extend({
         }
     },
 
-    getBackgroundSpriteNameFromData: function(){
-        if(this.data.status == LOCK){
+    getBackgroundSpriteNameFromData: function(status, numStar){
+        if(status == LOCK){
             return "ic_log_item.png";
         } else {
-            if(this.data.numStar == 0) return "ic_ready.png";
+            if(numStar == 0) return "ic_ready.png";
             else return "ic_finished_item.png";
         }
     },
@@ -76,6 +83,17 @@ var MapItem = cc.Class.extend({
             if(this.data.status == UN_LOCK) this.startGame();
             else this.showLockNotify();
         }
+    },
+
+    setPosition: function(){
+        var size = this.lockSize;
+        if(this.data.status == UN_LOCK){
+            size = this.openSize;
+        }
+
+        this.button.setSize(size);
+        this.levelLabel.setPosition(cc.p(size.width/2, size.height *6/10));
+        this.lockSprite.setPosition(cc.p(size.width/2, 5));
     },
 
     startGame: function(){

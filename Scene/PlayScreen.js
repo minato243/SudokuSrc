@@ -384,7 +384,7 @@ var PlayLayer = cc.Layer.extend({
         GameOverDialog.startDialog(LOSE, Math.floor(this.getParent().time), this.board.numError, this.level);
         this.getParent().stopTimeCounter();
         SoundManager.playLostSound();
-        PlatformUtils.showInterstitialAd();
+        PlatformUtils.getInstance().showInterstitialAd();
     },
 
     showYouWinDialog: function() {
@@ -398,7 +398,7 @@ var PlayLayer = cc.Layer.extend({
 
         GameDataMgr.getInstance().updateMapItemData(this.level,time, this.board.numError );
         MapScene.getInstance().updateData();
-        PlatformUtils.showInterstitialAd();
+        PlatformUtils.getInstance().showInterstitialAd();
     },
 
     createNewGame: function(){
